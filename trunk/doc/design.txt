@@ -1,0 +1,78 @@
+This is a very informal design document for Slashd-OS.
+
+I am basically writing this just to gather my thoughts on everything and such...
+
+
+Ok, starting at boot.
+The bootsector will be 1 stage, but will use the first 4 sectors of the floppy. 
+The current plan is to use a slightly modified version of StoopidFS. Of course, I never actually made a full design doc of it either, but never the less...
+
+What the bootsector should do.
+Load rest of bootsector.
+setup any hardware needed(currently, none)
+load disk driver(only from disk, into 0x2000, put size in 0x1000:0 [2bytes])
+load FS driver(only from disk, into 0x3000, put size in 0x1000:2 [2 bytes])
+load kernel(into 0x9000, put size in 0x1000:4)
+far jmp into kernel.
+end bootsector.
+
+
+
+
+
+
+
+StoopidFS(v2):
+StoopidFS is designed to be a very easy to implement FS.
+It is, by design, a slow FS, but for hobby OS, it works..
+The way files(and directories) are arranged in the filesystem is sequentially. No on-disk table is made.
+This means that to find a file at the end of the disk, all files must first be scanned at the first of the disk. 
+Names are limited to 255 bytes(254 with null termination).
+
+(0xE9 for rel16 jmp)
+
+files are stored in a sector like so:
+type(0x0F for file)[1]
+sectors used/reserved[4]
+file size[4]
+attributes[2]
+name size[1]
+directory entry [4]
+name(0 terminated) [name size]
+data [data size until sector filled]
+next sector:
+data..
+the last byte of the sector must be 0xFC -if this byte is missing, the file is assumed corrupted.
+(it must be this way for all data-only sectors)
+
+
+directories are stored in a table starting at a specified sector
+note that directory entry 0 is reserved for /
+first sector of directories:
+type(0x1D for first directory sector) [1]
+number of directories [4]
+next directory sector [4]
+directory entries...
+
+after 1st sector of directories:
+type(0xCD)[1]
+next directory sector[4]
+directory entries...
+
+
+directory entry format:
+directory name size [1]
+sub directory[4]
+number of files[4]
+directory name [name size]
+
+
+
+for the bootsector the following is used:
+type/jmp(0xE9 for bootsector) [1]
+ignored bytes(put jmp address here)[2]
+device size[4]
+directory start sector[2]
+file start sector[2]
+
+
