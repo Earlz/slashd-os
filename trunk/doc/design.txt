@@ -51,10 +51,10 @@ This means that to find a file at the end of the disk, all files must first be s
 Names are limited to 255 bytes(254 with null termination).
 
 (0xE9 for rel16 jmp)
-
+21
 files are stored in a sector like so:
 type(0x0F for file)[1]
-sectors used/reserved[4]
+sectors used[4]
 file size[4]
 attributes[2]
 name size[1]
@@ -63,8 +63,7 @@ name(0 terminated) [name size]
 data [data size until sector filled]
 next sector:
 data..
-the last byte of the sector must be 0xFC -if this byte is missing, the file is assumed corrupted.
-(it must be this way for all data-only sectors)
+
 
 
 directories are stored in a table starting at a specified sector
