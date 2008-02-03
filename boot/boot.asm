@@ -11,18 +11,24 @@ mov sp,0x7000
 call ReadBoot
 ;call ReadDiskDriver
 
-mov si,string1
-mov bx,string2
+mov si,fname
+mov dl,0
+mov bx,0x1000
+mov es,bx
+mov bx,0
+call _ReadFile
 
-mov ax,si
-mov cx,bx
-call _CompareStrings
-je .equal
-cli
-hlt
-
-.equal:
-jmp $
+mov ah,0x13
+mov al,1
+mov bh,0
+mov bl,0xF0
+mov cx,512
+mov dh,1
+mov dl,1
+mov bp,0x1000
+mov es,bp
+mov bp,0
+int 0x10
 
 
 cli
@@ -63,22 +69,66 @@ ret
 ;DL drive
 _ReadFile:
 push ax
-mov ax,word [6]
+push bx
+push di
+mov ax,word [CS:0x7C09] ;gets it out of bootsector(already loaded)
+jmp .first_skip
+
+.more_search:
+add ax,word [ES:bx+1]
+.first_skip:
 mov cx,1
+push ax
+push dx
 call _ReadSector
-cmp byte [bx+11],byte 0 ;If not in the / directory
+pop dx
+pop ax
+jc .error
+cmp byte [ES:bx],0x0F ;if not a file
+jne .more_search
+cmp byte [es:bx+12],byte 0 ;If not in the / directory
 jne .more_search
 push bx
-add bx,15
+add bx,16
 call _CompareStrings
 pop bx
 jne .more_search
 
 
+.loadfile: ;AX being sector of file(and file header info being in [ES:BX+0]
+mov cx,[es:bx+1]
+push cx
+mov si,bx
+add si,16
+push ax
+mov ah,0
+mov al,[es:bx+11] ;get past the name string
+add si,ax
 
-.more_search:
+mov di,bx
+mov cx,512
+mov ax,si
+sub ax,bx
+sub cx,ax
+pop ax
+push ds
+push es ;mov ds,es
+pop ds
+rep movsb
+pop ds
+
+pop cx
+mov bx,di
+inc ax
+dec cx ;if only 1 sector was to be read, ReadSector will simply return...
+call _ReadSector
 
 
+
+.error:
+pop di
+pop bx
+pop ax
 
 ret
 
@@ -87,6 +137,9 @@ ret
 ;CX for number of sectors
 ;CF for error
 _ReadSector: ;Not full error checking, but all works..
+cmp cx,0
+clc
+je .leave
 .over_check:
 cmp ax,18*80*2-1
 stc
@@ -114,6 +167,7 @@ mov dl,[tmp]
 
 ;do it!
 mov ah,0x02
+
 int 0x13
 jc .leave2
 pop cx
@@ -140,8 +194,7 @@ ret
 
 disk_driver_name: db "dd.d",0
 fs_driver_name: db "sfs.d",0
-string1: db "test1 string",0
-string2: db "test1 string",0
+fname: db "hello",0
 
 
 [section .bss]
