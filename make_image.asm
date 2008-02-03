@@ -19,9 +19,9 @@ sector3:
 .sectors_used: dd 1
 .filesize: dd 512
 .attrib: dw 0
-.name_size: db 6
+.name_size: db 5
 .directory: dd 0
-.fname: db "hello",0
+.fname: db "dd.d",0
 .fdata:
 db "Hello there Mr. World!",0
 
@@ -33,14 +33,27 @@ sector4:
 .sectors_used: dd 1
 .filesize: dd 512
 .attrib: dw 0
-.name_size: db 9
+.name_size: db 6
 .directory: dd 0
-.fname: db "hi_there",0
+.fname: db "sfs.d",0
 .fdata:
 db "The second file, w00t!",0
 db "The second file, w00t!",0
 db "The second file, w00t!",0
 times 512-($-sector4) db 0
+
+
+sector5:
+;third file- the kernel
+.stype: db 0x0F
+.sectors_used: dd 40
+.filesize: dd (512*40)
+.attrib: dw 0x8010
+.name_size: db 13
+.directory: dd 0
+.fname: db "kernel16.bin",0
+.fdata:
+incbin "kernel/kernel16.bin"
 
 
 end_image:

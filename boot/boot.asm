@@ -8,27 +8,34 @@ mov es,ax
 mov ss,ax
 mov sp,0x7000
 
-call ReadBoot
-;call ReadDiskDriver
+;call ReadBoot
 
-mov si,fname
+
+mov si,disk_driver_name
 mov dl,0
-mov bx,0x1000
+mov bx,0x2000
 mov es,bx
 mov bx,0
 call _ReadFile
 
-mov ah,0x13
-mov al,1
-mov bh,0
-mov bl,0xF0
-mov cx,512
-mov dh,1
-mov dl,1
-mov bp,0x1000
-mov es,bp
-mov bp,0
-int 0x10
+mov si,fs_driver_name
+mov dl,0
+mov bx,0x3000
+mov es,bx
+mov bx,0
+call _ReadFile
+
+mov si,kernel_name
+mov dl,0
+mov bx,0x9000
+mov es,bx
+mov bx,0
+call _ReadFile
+
+
+
+
+jmp 0x9000:0
 
 
 cli
@@ -194,7 +201,7 @@ ret
 
 disk_driver_name: db "dd.d",0
 fs_driver_name: db "sfs.d",0
-fname: db "hello",0
+kernel_name: db "kernel16.bin",0
 
 
 [section .bss]
