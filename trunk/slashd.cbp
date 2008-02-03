@@ -35,9 +35,7 @@
 		<Unit filename="boot\makefile">
 			<Option target="default" />
 		</Unit>
-		<Unit filename="kernel\main.asm">
-			<Option target="default" />
-		</Unit>
+		<Unit filename="kernel\kernel.asm" />
 		<Unit filename="kernel\makefile">
 			<Option target="default" />
 		</Unit>
