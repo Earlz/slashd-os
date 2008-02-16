@@ -39,6 +39,42 @@ memory map #2:
 8000:0-9000:0 -driver constant "keep alive"
 
 
+Memory Map #3:
+(using packed applications aligned 16 bytes)
+0:0-0:755 -used by BIOS
+0:755-2000:0 -reserved for driver tables, application tables, shared memory, and temporary memory.
+2000:0-4000:0 -swap memory
+5000:0-9000:0 -packed applications and drivers.
+9000:0-A000:0 -kernel code and data
+A000:0-F000:FFFF -used by devices and BIOS (only accessed by drivers!)
+
+Expanded Memory map for #3:
+segment 0
+0-755 used by BIOS
+755-FFF undecided/unused
+1000-1FFFF used for memory page management map.
+2000-9000 Used for process handles and structures.
+A000-FFFF Used for device nodes.
+Segment 1000
+0-4000 File handles pointers(can handle up to 1024)
+
+
+
+Applica
+
+
+file handle:
+32bit directory number(optional, and only used at filesystem driver level)(this is set to 0 if this file handle is invalid, but not yet free'd)
+2 byte device node file handle(note 0 is reserved and if this is zero, then it is a device node)
+8 bytes for location information(optional, only used at filesystem driver)
+
+
+
+location information:
+for an example floppy disk device, it may use:
+2 byte ABS sector number
+2 byte next ABS sector number(optimization only)
+1 byte 
 
 
 
@@ -97,10 +133,64 @@ file start sector[2]
 
 
 
+Packed Applications:
+Rather than each application to run, it be copied to 64kb page, applications in order to be marked
+at 'org 0' it must just aligned on a 16 byte border.
+
+Memory will be allocated in 256 byte pages.
+For optimization, there is the fight between memory, and speed.
+Memory pages have three states. Used, Free, and Reserved.
+Used is allocated by program or kernel and is assumed to be used.
+Free is unallocated, and unusable(until allocated) for applications and kernel.
+Reserved is allocated to a program or kernel, but is not assumed to be used, so that if memory runs out, these pages can be marked as free and be used.
+Reserved pages are actually only an optimization mechanism...
+
+
+
 
 
 Device Drivers:
 
+
+
+
+
+
+
+Applications and Drivers:
+Both driver and application files are flat binary files with org '0'.
+
+Appications:
+At startup, the registers are set this way:
+AX: File handle of current executing file
+BX: Process ID
+CX: 0
+DX: Attributes
+SI: Points to argument string
+DI: Last safely writable byte in address space(or total size of usable address space)
+BP: 0
+SP: Points to top of a stack of 512 bytes
+CS: Code segment
+DS: Code segment
+ES: Points to argument string
+SS: Points to stack of 512 bytes.
+
+
+
+Drivers:
+
+AX: File handle of current executing file(the driver executable)
+BX: Process ID
+CX: Current size of address space
+DX: Value telling what is being requested to be done to node(0 for first loading of driver, 0xFFFF for last shutdown of driver)
+SI: String of device node name(without /dev/)
+DI:  
+BP:
+SP:
+CS:
+DS:
+ES:
+SS:
 
 
 
