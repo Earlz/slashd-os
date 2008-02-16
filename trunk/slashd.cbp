@@ -36,8 +36,14 @@
 			<Option target="default" />
 		</Unit>
 		<Unit filename="kernel\kernel.asm" />
+		<Unit filename="kernel\macro.asm">
+			<Option target="make-all" />
+		</Unit>
 		<Unit filename="kernel\makefile">
 			<Option target="default" />
+		</Unit>
+		<Unit filename="kernel\pageman.asm">
+			<Option target="make-all" />
 		</Unit>
 		<Unit filename="make_image.asm">
 			<Option target="default" />
