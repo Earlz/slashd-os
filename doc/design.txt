@@ -60,6 +60,17 @@ Segment 1000
 
 
 
+Memory Map #4
+0:0-0:755 -used by BIOS
+0:755-1000:0 -undecided
+1000:0-2000:0 -kernel code and data
+2000:0-3000:0 -tables and such
+3000:0-4000:0 -swap page 1
+4000:0-9000:0 -packed applications and drivers
+9000:0-A000:0 -swap page 2(if memory allows)
+
+
+
 Applica
 
 
